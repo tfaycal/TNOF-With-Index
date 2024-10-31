@@ -1,22 +1,28 @@
-Student Management System
-This repository contains a Student Management System implemented in C, designed for efficiently handling student records. The project includes functionalities for adding, retrieving, and managing student data using an indexed approach for fast access.
+# Student Management System
 
-Features
-Student Record Management: Add, search, and retrieve student records.
-Indexing System: Utilizes an index for quick lookup of student records, reducing the time complexity of search operations.
-Temporary Buffering: Implements a temporary block to optimize disk writes, improving performance by minimizing the number of file operations.
-File Handling: Efficient management of student data through structured files for storage and retrieval.
-Directory Structure
-.vscode/: Contains settings for Visual Studio Code.
-etudiant.c: The main implementation file for student management functions.
-etudiant.h: Header file defining the Etudiant structure and related functions.
-global.h: Contains external variable declarations for global access.
-index.c: Implementation of indexing functionalities for fast data access.
-index.h: Header file defining index-related structures and functions.
-main.c: Entry point of the application.
-struct.h: Defines various data structures used in the system.
-Usage
-To compile the project, use a C compiler, and execute the generated executable to interact with the student management system.
+This repository contains the implementation of a student management system, which includes functionalities for adding, searching, and managing student records using an indexed approach for efficient data retrieval.
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Features
+
+- **Student Records**: Store and manage student information, including their identification and other relevant details.
+- **Indexing System**: Utilize a dense index to facilitate quick lookups of student records based on unique identifiers.
+- **Data Storage**: Implement methods for saving and loading student records from disk to ensure persistence.
+- **Temporary Block Management**: Use a temporary block to minimize disk writes, enhancing performance when adding or modifying records.
+
+## File Structure
+
+- `etudiant.c`: Contains the main implementation of student management functionalities.
+- `etudiant.h`: Header file for the student structure and function declarations.
+- `index.c`: Implementation of indexing functions.
+- `index.h`: Header file for index-related structures and declarations.
+- `global.h`: Contains global variable declarations.
+- `main.c`: Entry point of the application.
+- `.vscode`: Directory for Visual Studio Code settings and configurations.
+
+## Usage
+
+To use this system, compile the source files and execute the generated binary. The application provides a command-line interface for interacting with student records.
+
+## License
+
+This project is licensed under the MIT License.
