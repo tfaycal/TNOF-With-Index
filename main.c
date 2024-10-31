@@ -37,7 +37,15 @@ int main()
         printf("Erreur lors de l'ouverture du fichier.\n");
         return -1;
     }
-
+    printf("Voulez vous charger l'index (y/n) : ");
+    scanf(" %c", &mode);
+    if (mode == 'y')
+    {
+        loadIndex(monindex, &nbrelementindex, "index.indx");
+        read_bloc(tnof, &TempBloc, tnof->ent.nb_bloc - 1);
+    }
+    if (TempBloc.nb == MAX_REC)
+        TempBloc.nb = 0;
     do
     {
         afficher_menu();
@@ -62,6 +70,7 @@ void afficher_menu()
     printf("5. Afficher l'index\n"); // Nouvelle option ajoutée
     printf("6. save l'index\n");     // Nouvelle option ajoutée
     printf("7. load l'index\n");     // Nouvelle option ajoutée
+    printf("8. Afficher le bloc Tampon\n");     // Nouvelle option ajoutée
     printf("0. Quitter\n");
     printf("----------------\n");
 }
@@ -81,15 +90,7 @@ void gerer_menu(TNOF *tnof, int choix)
         scanf("%s", etudiant.nom);
         printf("Prenom : ");
         scanf("%s", etudiant.prenom);
-        int n = 230, i = 0;
-        while (i != n)
-        {
-            etudiant.mat++;
-
-            insert_etudiant(tnof, etudiant, monindex, &nbrelementindex);
-            i++;
-        }
-
+        insert_etudiant(tnof, etudiant, monindex, &nbrelementindex);
         break;
 
     case 2:
@@ -121,7 +122,7 @@ void gerer_menu(TNOF *tnof, int choix)
         AddresseDense *position;
         if ((position = rechercher_etudiant_index(tnof, mat, &etudiant, monindex, nbrelementindex)) != NULL)
         {
-            printf("Etudiant trouve : Bloc %d Record %d\n",position->bloc,position->record);
+            printf("Etudiant trouve : Bloc %d Record %d\n", position->bloc, position->record);
             printetudiant(etudiant);
         }
         else
@@ -143,8 +144,16 @@ void gerer_menu(TNOF *tnof, int choix)
         afficherBloc(TempBloc);
         break;
     case 0:
+        if (TempBloc.nb < MAX_REC)
+        {
+            printf("Saving TempBloc !\n");
+            write_bloc(tnof, TempBloc, tnof->ent.nb_bloc);
+            tnof->ent.nb_bloc++;
+            write_entete(tnof->ent, tnof);
+        }
         printf("Saving index !\n");
         saveIndex(monindex, nbrelementindex, "index.indx");
+
         printf("Quitter.\n");
         break;
 

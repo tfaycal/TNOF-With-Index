@@ -3,8 +3,6 @@
 #include "struct.h"
 #include "global.h"
 #include "index.h"
-#include "etudiant.h"
-
 
 TNOF *open_file(char *path, char mode)
 {
@@ -22,7 +20,7 @@ TNOF *open_file(char *path, char mode)
         f = fopen(path, "w");
         fclose(f);
         tnof->ent.nb_bloc = 0;
-        write_entet(tnof->ent, tnof);
+        write_entete(tnof->ent, tnof);
         return tnof;
     }
 }
@@ -33,7 +31,7 @@ void read_entete(TNOF *tnof)
     fclose(f);
 }
 
-void write_entet(Entete e, TNOF *tnof)
+void write_entete(Entete e, TNOF *tnof)
 {
     FILE *f = fopen(tnof->fichier, "r+b");
     fwrite(&(tnof->ent), sizeof(Entete), 1, f);
@@ -71,65 +69,84 @@ int read_bloc(TNOF *tnof, Bloc *bloc, int position)
 }
 AddresseDense *rechercher_etudiant_index(TNOF *tnof, int mat, Etudiant *etudiant, IndexEntryDense *index, int taille)
 {
-
     int i;
+
+    // Parcourt les enregistrements dans le Bloc temporaire 'TempBloc' pour rechercher l'étudiant avec le matricule `mat`
     for (i = 0; i < TempBloc.nb; i++)
     {
+        // Si le matricule correspond, l'étudiant est trouvé dans TempBloc
         if (TempBloc.tab_enreg[i].mat == mat)
         {
-            *etudiant = TempBloc.tab_enreg[i];
+            *etudiant = TempBloc.tab_enreg[i]; // Copie les informations de l'étudiant trouvé
             AddresseDense *tempAdr = malloc(sizeof(AddresseDense));
-            tempAdr->bloc = -1;
+            tempAdr->bloc = -1; // Indique que l'adresse est dans le bloc temporaire
             tempAdr->record = -1;
-            return tempAdr;
+            return tempAdr; // Retourne l'adresse temporaire
         }
     }
 
+    // Si l'index est vide, l'étudiant n'est pas présent
     if (taille == 0)
         return NULL;
+
+    // Recherche l'étudiant dans l'index
     AddresseDense *position = rechercherEtudiantID(mat, index, taille);
 
+    // Si l'étudiant n'est pas dans l'index, retourne NULL
     if (position == NULL)
-        return -1;
+        return NULL;
+
     Bloc b;
 
-    read_bloc(tnof, &b, position->bloc );
-    *etudiant = b.tab_enreg[position->record];
-   
-    return position;
+    // Lit le bloc contenant l'enregistrement de l'étudiant trouvé dans l'index
+    read_bloc(tnof, &b, position->bloc);
+    *etudiant = b.tab_enreg[position->record]; // Copie les informations de l'étudiant
+
+    return position; // Retourne l'adresse dense trouvée
 }
 
 void insert_etudiant(TNOF *tnof, Etudiant etudiant, IndexEntryDense *index, int *taille)
 {
     Etudiant temp;
-    // rechercher etudiant et stocker son numéro du bloc
-    rechercher_etudiant_index(tnof, etudiant.mat, &temp, index, taille);
+
+    // Recherche si l'étudiant est déjà présent dans le fichier
+    rechercher_etudiant_index(tnof, etudiant.mat, &temp, index, *taille);
+
     AddresseDense *nbloc = NULL;
+
+    // Si l'étudiant est trouvé, ne rien faire (insertion annulée)
     if (nbloc != NULL)
         return;
+
     int positionbloc, positionrecord;
-    // Le dernier bloc contient de l'espace
+
+    // Si le dernier bloc a de l'espace, insère l'étudiant dans TempBloc
     if (TempBloc.nb < MAX_REC)
     {
+        // Si aucun bloc n'existe, initialise le nombre de blocs à 1
         if (tnof->ent.nb_bloc == 0)
             tnof->ent.nb_bloc = 1;
-        TempBloc.tab_enreg[TempBloc.nb] = etudiant;
+
+        TempBloc.tab_enreg[TempBloc.nb] = etudiant; // Ajoute l'étudiant dans le bloc temporaire
         positionbloc = tnof->ent.nb_bloc;
         positionrecord = TempBloc.nb;
-        TempBloc.nb++;
+        TempBloc.nb++; // Augmente le nombre d'enregistrements dans TempBloc
     }
     else
     {
-        // le bloc est complet
+        // Si le bloc temporaire est plein, le sauvegarde dans le fichier
         write_bloc(tnof, TempBloc, tnof->ent.nb_bloc);
+
+        // Ajoute l'étudiant au début d'un nouveau bloc
         TempBloc.tab_enreg[0] = etudiant;
         positionbloc = tnof->ent.nb_bloc + 1;
         positionrecord = 0;
-        TempBloc.nb = 1;
-        tnof->ent.nb_bloc++;
-        write_entet(tnof->ent, tnof);
+        TempBloc.nb = 1;               // Réinitialise le compteur d'enregistrements
+        tnof->ent.nb_bloc++;           // Incrémente le nombre total de blocs
+        write_entete(tnof->ent, tnof); // Sauvegarde l'entête mise à jour
     }
 
+    // Ajoute une entrée pour l'étudiant dans l'index, en maintenant l'ordre
     addEtudiantIndexPrimary(etudiant, index, taille, positionbloc, positionrecord);
 }
 
